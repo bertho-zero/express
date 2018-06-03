@@ -228,7 +228,6 @@ describe('@feathersjs/express/rest provider', () => {
                 type: 'error',
                 method: 'get',
                 path: 'hook-error',
-                result: null,
                 error: {}
               },
               error: { message: 'I blew up' }
@@ -500,5 +499,44 @@ describe('@feathersjs/express/rest provider', () => {
           assert.deepEqual(expected, res.data);
         });
     });
+  });
+});
+
+describe('Custom methods', () => {
+  let server;
+
+  after(done => server.close(done));
+
+  it('works with custom methods', () => {
+    const app = expressify(feathers())
+      .configure(rest(rest.formatter))
+      .use(bodyParser.json())
+      .use('/todo', {
+        methods: {
+          custom: ['id', 'data', 'params']
+        },
+        get (id) {
+          return id;
+        },
+        // HttpMethod is usable as a decorator: @HttpMethod('POST')
+        custom: rest.httpMethod('POST')((id, data, params = {}) => {
+          return Promise.resolve({ id, data });
+        })
+      });
+
+    server = app.listen(4781);
+
+    return axios.post('http://localhost:4781/todo/42/custom', { text: 'Do dishes' })
+      .then(res => {
+        assert.equal(res.headers.allow, 'GET,POST');
+        assert.deepEqual(res.data, {
+          id: '42',
+          data: { text: 'Do dishes' }
+        });
+      })
+      .catch(err => {
+        console.log(err);
+        return Promise.reject(err);
+      });
   });
 });
