@@ -512,16 +512,15 @@ describe('Custom methods', () => {
       .configure(rest(rest.formatter))
       .use(bodyParser.json())
       .use('/todo', {
-        methods: {
-          custom: ['id', 'data', 'params']
-        },
         get (id) {
           return id;
         },
         // HttpMethod is usable as a decorator: @HttpMethod('POST')
-        custom: rest.httpMethod('POST')((id, data, params = {}) => {
-          return Promise.resolve({ id, data });
-        })
+        custom: rest.httpMethod('POST')(feathers.activeHooks(['id', 'data', 'params'])(
+          (id, data, params = {}) => {
+            return Promise.resolve({ id, data });
+          }
+        ))
       });
 
     server = app.listen(4781);
