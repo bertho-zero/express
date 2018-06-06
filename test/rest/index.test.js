@@ -515,8 +515,8 @@ describe('Custom methods', () => {
         get (id) {
           return id;
         },
-        // HttpMethod is usable as a decorator: @HttpMethod('POST')
-        custom: rest.httpMethod('POST')(feathers.activeHooks(['id', 'data', 'params'])(
+        // httpMethod is usable as a decorator: @httpMethod('POST', '/:id/custom-path')
+        custom: rest.httpMethod('POST')(feathers.activateHooks(['id', 'data', 'params'])(
           (id, data, params = {}) => {
             return Promise.resolve({ id, data });
           }
